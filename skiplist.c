@@ -43,17 +43,19 @@ SkipList skiplist_create(int nb_levels) {
         sk->premiers[i] = NULL;
         sk->derniers[i] = NULL;
     }
+    // Initialise la hauteur de la liste et le nombre d'éléments
     sk->hauteur = (unsigned int)nb_levels;
     sk->nb_elements = 0;
     return sk;
 }
 
 Noeud creer_noeud(SkipList d, int x) {
+    // Alloue en mémoire un noeud
     Noeud nd = (Noeud)malloc(sizeof(struct s_node));
     assert(nd != NULL);
     // Génère la hauteur du noeud
     nd->hauteur = (int)rng_get_value(&d->rngesus, d->hauteur-1)+1;
-    // Initialise les tableaux de Noeud
+    // Initialise les tableaux de noeuds suivants et précédents
     nd->suivants = (Noeud*)malloc(sizeof(Noeud)*nd->hauteur);
     assert(nd->suivants != NULL);
     nd->precedents = (Noeud*)malloc(sizeof(Noeud)*nd->hauteur);
@@ -62,10 +64,15 @@ Noeud creer_noeud(SkipList d, int x) {
         nd->suivants[i] = NULL;
         nd->precedents[i] = NULL;
     }
+    // Initialise la valeur du noeud
     nd->valeur = x;
     return nd;
 }
 
+/**
+ * \brief Détruit un noeud
+ * \param nd Noeud à détruire
+ */
 void detruire_noeud(Noeud nd) {
     free(nd->suivants);
     free(nd->precedents);
@@ -73,15 +80,20 @@ void detruire_noeud(Noeud nd) {
 }
 
 void skiplist_delete(SkipList d) {
+    // Place le noeud courant sur le premier noeud de la liste
     Noeud courant = d->premiers[0];
     Noeud precedent = NULL;
     while (courant != NULL) {
+        // Avance d'un cran le noeud courant
         precedent = courant;
         courant = courant->suivants[0];
+        // Détruit le noeud précédent
         detruire_noeud(precedent);
     }
+    // Libère en mémoire les tableaux de premiers et derniers noeuds
     free(d->premiers);
     free(d->derniers);
+    // Libère en mémoire la skiplist
     free(d);
 }
 
@@ -91,7 +103,9 @@ unsigned int skiplist_size(SkipList d) {
 
 int skiplist_ith(SkipList d, unsigned int i) {
     assert(i < d->nb_elements);
+    // Place le noeud courant sur le premier noeud
     Noeud courant = d->premiers[0];
+    // Avance le noeud courant jusqu'au ième noeud
     for (unsigned int j = 0; j != i; j++)
         courant = courant->suivants[0];
     return courant->valeur;
@@ -105,6 +119,14 @@ void skiplist_map(SkipList d, ScanOperator f, void *user_data) {
     }
 }
 
+/**
+ * \brief Récupère le premier noeud non null le plus haut d'une liste de noeud
+ * et la hauteur à laquelle il a été trouvé
+ * \param des_noeuds Une liste de noeud dans laquelle on cherche le premier noeud non null le plus haut
+ * \param nd Pointeur sur le noeud à renvoyer
+ * \param max La hauteur maximum de la liste de noeud
+ * \return La hauteur a laquelle a été trouvé le noeud non null le plus haut
+ */
 int noeud_haut(Noeud* des_noeuds, Noeud* nd, int max) {
     *nd = des_noeuds[max];
     while (*nd == NULL && max >= 0) {
@@ -116,37 +138,47 @@ int noeud_haut(Noeud* des_noeuds, Noeud* nd, int max) {
 }
 
 SkipList skiplist_insert(SkipList d, int value) {
+    // Initialise le noeud courant
     Noeud courant = NULL;
+    // ainsi que les tableaux de noeuds suivants et précédents
     Noeud suivants[d->hauteur];
     Noeud precedents[d->hauteur];
     for (unsigned int i = 0; i < d->hauteur; i++) {
         suivants[i] = d->premiers[i];
         precedents[i] = NULL;
     }
-    courant = suivants[d->hauteur-1];
+    // Récupère le premier noeud non null et la hauteur a laquelle il a été trouvée
     int max = noeud_haut(suivants, &courant, d->hauteur-1);
     while (max >= 0 && courant != NULL) {
         if (courant->valeur > value) {
+            // Le noeud courant est trop grand
             max--;
+            // Le prochain noeud est celui en dessous
             if (max >= 0)
                 courant = suivants[max];
         } else if (courant->valeur < value) {
+            // Le noeud courant est plus petit
             max = courant->hauteur-1;
+            // Mise à jour des noeuds précédents et suivants
             for (int i = 0; i < value && i < (int)courant->hauteur; i++)
                 precedents[i] = courant;
             for (unsigned int j = 0; j < courant->hauteur; j++)
                 suivants[j] = courant->suivants[j];
+            // Récupère le premier noeud non null et la hauteur a laquelle il a été trouvée
             max = noeud_haut(suivants, &courant, max);
         } else
+            // Un noeud de cette valeur existe déjà
             courant = NULL;
     }
     if (max < 0) {
         // Crée le noeud à insérer
         Noeud nouveau = creer_noeud(d, value);
+        // Initialise ses noeuds suivants et précédents
         for (unsigned int i = 0; i < nouveau->hauteur; i++) {
             nouveau->suivants[i] = suivants[i];
             nouveau->precedents[i] = precedents[i];
         }
+        // Met à jour les noeuds suivants et précédents
         for (unsigned int i = 0; i < nouveau->hauteur; i++) {
             if (nouveau->precedents[i] == NULL)
                 d->premiers[i] = nouveau;

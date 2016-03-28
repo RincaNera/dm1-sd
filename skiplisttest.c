@@ -232,5 +232,3 @@ void generate(int nbvalues){
 	}
 	fclose(output);
 }
-
-
