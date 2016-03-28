@@ -2,6 +2,7 @@
 #define __DESKIPLIST_H__
 #include <stdbool.h>
 
+
 /**
  *	@defgroup SkipListAT SkipList abstract type
  *  @brief Definition of the SkipList type and operators
@@ -18,6 +19,8 @@ typedef struct s_SkipList *SkipList;
  *	@brief Type of the operator that one may map on a SkipList.
  */
 typedef void(*ScanOperator)(int, void*);
+
+void skiplist_afficher(SkipList sk);
 
 /** 
  *  @brief Constructor of an empty SkipList.
@@ -203,7 +206,6 @@ SkipListIterator skiplist_iterator_next(SkipListIterator it);
  *  @return the value designed by the iterator
  */
 int skiplist_iterator_value(SkipListIterator it);
-
 
 /** @} */
 

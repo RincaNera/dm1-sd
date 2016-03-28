@@ -25,4 +25,4 @@ Search 20 values :
 	Not found 7
 	Min number of operations : 1
 	Max number of operations : 8
-	Mean number of operations : 5
+	Mean number of operations : 4

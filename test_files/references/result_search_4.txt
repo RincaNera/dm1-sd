@@ -37038,6 +37038,6 @@ Statistics :
 Search 37035 values :
 	Found 8209
 	Not found 28826
-	Min number of operations : 2
+	Min number of operations : 1
 	Max number of operations : 30
 	Mean number of operations : 12
